@@ -44,21 +44,24 @@ class Homework01App : public AppBasic {
 
 	// Creates a basic Rectangle with starting point (x1, y1) and ending point (x2, y2) with color
 	// c1 and c2. This satisfies Requirement A.1 (rectangle).
-	void basicRectangle (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1, Color8u c2);
+	void makeRectangle (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1, Color8u c2);
+
+	// Creates a basic circle with center x, y, radius r, satisfies Requirement A.2 (circle)
+	void makeCircle(uint8_t* pixels, int xCenter, int yCenter, int r, Color8u c1);
 
 	// Creates an unappealing seafoamGreen tint on the window, satisfies Requirement A.6 (tint). 
 	void makeDarkSeafoamGreenTint (uint8_t* pixels);
 
 	// Creates a basic line with starting point (x1, y1) and ending point (x2, y2) with color c1.
 	// This satisfies Requirement A.3 (line).
-	void basicLine (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1);
+	void makeLine (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1);
 
 	// A helper method for setting the pixel color
 	void Homework01App::setPixel(uint8_t* pixels, int xCoor, int yCoor, Color8u c1);
 
 	// Creates a basic triangle with three points (x1, y1), (x2, y2), (x3, y3) with color c1.
 	// This satisfies Requirement A.7 (triangle).
-	void basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1);
+	void makeTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1);
 };
 
 void Homework01App::prepareSettings(Settings* settings) {
@@ -66,7 +69,7 @@ void Homework01App::prepareSettings(Settings* settings) {
 	(*settings).setResizable(false);
 }
 
-void Homework01App::basicRectangle(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u fill, Color8u fill2) {
+void Homework01App::makeRectangle(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u fill, Color8u fill2) {
 	//Determines the starting and ending coordinates for the rectangle
 	int startx = (x1 < x2) ? x1 : x2;
 	int endx = (x1 < x2) ? x2 : x1;
@@ -103,19 +106,22 @@ void Homework01App::basicRectangle(uint8_t* pixels, int x1, int y1, int x2, int 
 	}
 }
 
-void Homework01App::makeDarkSeafoamGreenTint(uint8_t* pixels) 
+void Homework01App::makeCircle(uint8_t* pixels, int xCenter, int yCenter, int r, Color8u c1)
 {
-	for (int y = 0; y <= kTextureSize; y++) {
-		for (int x = 0; x <= kTextureSize; x++) {	
-			//pixels[3*(x + y*kTextureSize)] = 50;
-			pixels[3*(x + y*kTextureSize)+1] = 255;
-			pixels[3*(x + y*kTextureSize)+2] = 80;		
+	for (int x = xCenter; x <= r; x++)
+	{
+		for (int y = yCenter; y <= r; y++)
+		{
+			int distanceFromCenter = (int)sqrt((double)(xCenter * xCenter) + (yCenter * yCenter));
+			while (distanceFromCenter <= r)
+			{
+
+			}
 		}
 	}
 }
 
-
-void Homework01App::basicLine(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1)
+void Homework01App::makeLine(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1)
 {
 	// On this method I used the starting algorithm from this website:
 	// http://www.codekeep.net/snippets/e39b2d9e-0843-4405-8e31-44e212ca1c45.aspx
@@ -262,11 +268,11 @@ void Homework01App::setPixel(uint8_t* pixels, int xCoor, int yCoor, Color8u c1)
 }
 
 
-void Homework01App::basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1)
+void Homework01App::makeTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1)
 {
-	basicLine(pixels, x1, y1, x2, y2, c1);
-	basicLine(pixels, x2, y2, x3, y3, c1);
-	basicLine(pixels, x1, y1, x3, y3, c1);
+	makeLine(pixels, x1, y1, x2, y2, c1);
+	makeLine(pixels, x2, y2, x3, y3, c1);
+	makeLine(pixels, x1, y1, x3, y3, c1);
 }
 
 void Homework01App::setup()
@@ -285,22 +291,22 @@ void Homework01App::mouseDown( MouseEvent event )
 	int xLoc = event.getX();
 	int yLoc = event.getY();
 	//Sets background color to White
-	basicRectangle(dataArray, 0, 0, kTextureSize, kTextureSize, WHT, WHT);		
+	makeRectangle(dataArray, 0, 0, kTextureSize, kTextureSize, WHT, WHT);		
 
 	int rectSize = (rand() % 3 + 1);
 	if (rectSize == 1) 
 	{
-		basicRectangle(dataArray, xLoc - 20, yLoc - 20, xLoc + 20, yLoc + 20, RND, RND);
+		makeRectangle(dataArray, xLoc - 20, yLoc - 20, xLoc + 20, yLoc + 20, RND, RND);
 	}
 	if (rectSize == 2)
 	{
-	    basicRectangle(dataArray, xLoc - 40, yLoc - 40, xLoc + 40, yLoc + 40, RND, RND);
+	    makeRectangle(dataArray, xLoc - 40, yLoc - 40, xLoc + 40, yLoc + 40, RND, RND);
 	}
 
 	if (rectSize == 3)
 	{
-		basicRectangle(dataArray, xLoc - 60, yLoc - 60, xLoc + 60, yLoc + 60, RND, RND);
-	}	
+		makeRectangle(dataArray, xLoc - 60, yLoc - 60, xLoc + 60, yLoc + 60, RND, RND);
+	} 	
 }
 
 void Homework01App::update()
@@ -311,19 +317,19 @@ void Homework01App::update()
 	//Makes a two-colored rectangle
 	Color8u rectFill = Color8u(255,0,0);
 	Color8u rectFill2 = Color8u(0,100,200);
-	basicRectangle(dataArray, 100, 100, 400, 400, rectFill, rectFill2); 
+	makeRectangle(dataArray, 100, 100, 400, 400, rectFill, rectFill2); 
 
 	
 	//Makes a line
 	Color8u lineColor = Color8u(0,255,5);
-	basicLine(dataArray, 700, 10, 600, 600, lineColor);
+	makeLine(dataArray, 600, 200, 700, 610, lineColor);
+	makeLine(dataArray, 600, 200, 700, 620, lineColor);
+	makeLine(dataArray, 600, 200, 700, 630, lineColor);
+
 
 	//Makes a triangle
 	Color8u triangleColor = Color8u(255,255,0);
-	basicTriangle(dataArray, 500, 400, 500, 500, 600, 500, triangleColor);
-
-	//Puts an ugly, yet visible seafoam green tint on the window.
-	//makeDarkSeafoamGreenTint(dataArray);
+	makeTriangle(dataArray, 500, 400, 500, 500, 600, 500, triangleColor);
 
 	//Only save the first frame of drawing as output, code snippet via Dr. Brinkman
 	if(frame_number_ == 0){
