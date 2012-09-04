@@ -43,13 +43,19 @@ class Homework01App : public AppBasic {
 	static const int kAppHeight=600;
 	static const int kTextureSize=1024;
 
-
+	// Creates a basic Rectangle with starting point (x1, y1) and ending point (x2, y2) with color
+	// c1 and c2. This satisfies Requirement A.1 (rectangle).
 	void basicRectangle (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1, Color8u c2);
+
 
 	void redTintImage (uint8_t* pixels);
 
+	// Creates a basic line with starting point (x1, y1) and ending point (x2, y2) with color c1.
+	// This satisfies Requirement A.3 (line).
 	void basicLine (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1);
 
+	// Creates a basic triangle with three points (x1, y1), (x2, y2), (x3, y3) with color c1.
+	// This satisfies Requirement A.7 (triangle).
 	void basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1);
 };
 
