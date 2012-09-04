@@ -71,7 +71,7 @@ void Homework01App::basicRectangle(uint8_t* pixels, int x1, int y1, int x2, int 
 	int starty = (y1 < y2) ? y1 : y2;
 	int endy = (y1 < y2) ? y2 : y1;
 	
-	//Boundary Checking
+	//Boundary Checking, credit to Dr. Brinkman
 	if (endx < 0) return;
 	if (endy < 0) return;
 	if (startx >= kAppWidth) return;
@@ -120,8 +120,41 @@ void Homework01App::redTintImage(uint8_t* pixels)
 
 void Homework01App::basicLine(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1)
 {
+	//Determines the starting and ending coordinates for the line
+	int startx = (x1 < x2) ? x1 : x2;
+	int endx = (x1 < x2) ? x2 : x1;
+	int starty = (y1 < y2) ? y1 : y2;
+	int endy = (y1 < y2) ? y2 : y1;
+	int currentx = startx + 1;
+	int currenty;
 
+	//If line is more "horizontal"
+	if ((endx - startx) > (endy - starty))
+	{
+		//Draws the first pixel of the line
+		pixels[3*(startx + starty*kTextureSize)] = c1.r;
+		pixels[3*(startx + starty*kTextureSize)+1] = c1.g;
+		pixels[3*(startx + starty*kTextureSize)+2] = c1.b;
+				
+		while (currentx < endx) {
+			currenty = ((endy - starty)/(endx - startx)) * (currentx - startx) + starty;
+					
+			for (int y = starty; y < endy; y++) {
+				if (y == currenty)
+				{
+					pixels[3*(currentx + currenty*kTextureSize)] = c1.r;
+					pixels[3*(currentx + currenty*kTextureSize)+1] = c1.g;
+					pixels[3*(currentx + currenty*kTextureSize)+2] = c1.b;
+				} 
+			}
+		currentx++;
+		} 
+	}
 
+	if ((endy - starty) > (endx - startx))
+	{
+
+	}
 
 }
 
@@ -155,6 +188,9 @@ void Homework01App::update()
 	basicRectangle(dataArray, 100, 100, 400, 400, rectFill, rectFill2); 
 
 	redTintImage(dataArray);
+
+	Color8u lineColor = Color8u(0,0,0);
+	basicLine(dataArray, 5, 5, 500, 300, lineColor);
 
 	//Only save the first frame of drawing as output, code snippet via Dr. Brinkman
 	if(frame_number_ == 0){
