@@ -101,9 +101,9 @@ void Homework01App::redTintImage(uint8_t* pixels)
 {
 	for (int y = 0; y <= kAppHeight; y++) {
 		for (int x = 0; x <= kAppWidth; x++) {	
-			pixels[3*(x + y*kTextureSize)] = pixels[3*(x + y*kTextureSize)] + 100;
-			pixels[3*(x + y*kTextureSize)+1] = pixels[3*(x + y*kTextureSize)+1];
-			pixels[3*(x + y*kTextureSize)+2] = pixels[3*(x + y*kTextureSize)+2];		
+			pixels[3*(x + y*kTextureSize)] = 100;
+			//pixels[3*(x + y*kTextureSize)+1] = pixels[3*(x + y*kTextureSize)+1];
+			//pixels[3*(x + y*kTextureSize)+2] = pixels[3*(x + y*kTextureSize)+2];		
 		}
 	}
 }
@@ -119,6 +119,9 @@ void Homework01App::setup()
 
 void Homework01App::mouseDown( MouseEvent event )
 {
+	int xCoor = event.getX();
+	int yCoor = event.getY();
+	
 }
 
 void Homework01App::update()
@@ -130,7 +133,7 @@ void Homework01App::update()
 	Color8u rectFill2 = Color8u(255,128,255);
 	basicRectangle(dataArray, 100, 100, 400, 400, rectFill, rectFill2); 
 
-	//redTintImage(dataArray);
+	redTintImage(dataArray);
 
 	//Only save the first frame of drawing as output, code snippet via Dr. Brinkman
 	if(frame_number_ == 0){
