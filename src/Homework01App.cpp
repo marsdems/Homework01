@@ -54,6 +54,9 @@ class Homework01App : public AppBasic {
 	// This satisfies Requirement A.3 (line).
 	void basicLine (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1);
 
+	// A helper method
+	void Homework01App::setPixel(uint8_t* pixels, int xCoor, int yCoor, Color8u c1);
+
 	// Creates a basic triangle with three points (x1, y1), (x2, y2), (x3, y3) with color c1.
 	// This satisfies Requirement A.7 (triangle).
 	void basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1);
@@ -85,22 +88,16 @@ void Homework01App::basicRectangle(uint8_t* pixels, int x1, int y1, int x2, int 
 		for (int x = startx; x <= endx; x++) {			
 			if (currentPixel < (rectSize/2)) 
 			{
-				pixels[3*(x + y*kTextureSize)] = fill.r;
-				pixels[3*(x + y*kTextureSize)+1] = fill.g;
-				pixels[3*(x + y*kTextureSize)+2] = fill.b;				
+				setPixel(pixels, x, y, fill);				
 			}
 			else if (currentPixel > (rectSize/2)) 
 			{
-				pixels[3*(x + y*kTextureSize)] = fill2.r;
-				pixels[3*(x + y*kTextureSize)+1] = fill2.g;
-				pixels[3*(x + y*kTextureSize)+2] = fill2.b;				
+				setPixel(pixels, x, y, fill2);			
 			}
 			//Middle pixel of rectangle will be red
 			else
 			{
-				pixels[3*(x + y*kTextureSize)] = 255;
-				pixels[3*(x + y*kTextureSize)+1] = 0;
-				pixels[3*(x + y*kTextureSize)+2] = 0;
+				setPixel(pixels, x, y, Color8u(255,0,0));
 			}
 			currentPixel++;
 		}
@@ -109,57 +106,175 @@ void Homework01App::basicRectangle(uint8_t* pixels, int x1, int y1, int x2, int 
 
 void Homework01App::redTintImage(uint8_t* pixels) 
 {
-	for (int y = 0; y <= kAppHeight; y++) {
-		for (int x = 0; x <= kAppWidth; x++) {	
-			pixels[3*(x + y*kTextureSize)] = 100;
+	for (int y = 0; y <= kTextureSize; y++) {
+		for (int x = 0; x <= kTextureSize; x++) {	
+			pixels[3*(x + y*kTextureSize)] = 255;
 			//pixels[3*(x + y*kTextureSize)+1] = pixels[3*(x + y*kTextureSize)+1];
 			//pixels[3*(x + y*kTextureSize)+2] = pixels[3*(x + y*kTextureSize)+2];		
 		}
 	}
 }
 
+
 void Homework01App::basicLine(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1)
 {
-	//Determines the starting and ending coordinates for the line
+	// On this method I used the starting algorithm from this website:
+	// http://www.codekeep.net/snippets/e39b2d9e-0843-4405-8e31-44e212ca1c45.aspx
+	// and then rewrote section of the code to better fit the rest of the program
+
+	// Determines the starting and ending coordinates for the line
 	int startx = (x1 < x2) ? x1 : x2;
 	int endx = (x1 < x2) ? x2 : x1;
 	int starty = (y1 < y2) ? y1 : y2;
 	int endy = (y1 < y2) ? y2 : y1;
-	int currentx = startx + 1;
-	int currenty;
+		
 
-	//If line is more "horizontal"
-	if ((endx - startx) > (endy - starty))
+	int F, x, y;
+    int dy            = endy - starty;  // y-increment from p1 to p2
+    int dx            = endx - endy;  // x-increment from p1 to p2
+    int dy2           = (dy << 1);  // dy << 1 == 2*dy
+    int dx2           = (dx << 1);
+    int dy2_minus_dx2 = dy2 - dx2;  // precompute constant for speed up
+    int dy2_plus_dx2  = dy2 + dx2;
+
+	// Vertical Line
+	if (startx == endx)
 	{
-		//Draws the first pixel of the line
-		pixels[3*(startx + starty*kTextureSize)] = c1.r;
-		pixels[3*(startx + starty*kTextureSize)+1] = c1.g;
-		pixels[3*(startx + starty*kTextureSize)+2] = c1.b;			
-			
-		for (int x = currentx; x <= endx; x++)
-		{
-			currenty = ((endy - starty)/(endx - startx)) * (currentx - startx) + starty;
-			for (int y = starty; y <= endy; y++) {
-				//if (y == currenty)
-				//{
-					pixels[3*(currentx + currenty*kTextureSize)] = c1.r;
-					pixels[3*(currentx + currenty*kTextureSize)+1] = c1.g;
-					pixels[3*(currentx + currenty*kTextureSize)+2] = c1.b;
-				//}				
-			}
-		}		
-	}
+        x = startx;
+        y = starty;
+        while (y <= endy)
+        {
+           setPixel(pixels, x, y, c1);
+           y++;
+        }
+        return;
+   }
+    // Horizontal line
+    else if (starty == endy)
+    {
+        x = startx;
+        y = starty;
 
-	if ((endy - starty) > (endx - startx))
-	{
+        while (x <= endx)
+        {
+            setPixel(pixels, x, y, c1);
+            x++;
+        }
+        return;
+    }
+	
+    if (dy >= 0)    
+    {
+        // Case 1: 0 <= m <= 1 (Original case)
+        if (dy <= dx)   
+        {
+            F = dy2 - dx;    // initial F
 
+            x = startx;
+            y = starty;
+            while (x <= endx)
+            {
+                setPixel(pixels, x, y, c1);	
+                if (F <= 0)
+                {
+                    F += dy2;
+                }
+                else
+                {
+                    y++;
+                    F += dy2_minus_dx2;
+                }
+                x++;
+            }
+        }
+        // Case 2: 1 < m < INF (Mirror about y=x line
+        // replace all dy by dx and dx by dy)
+        else
+        {
+            F = dx2 - dy;    // initial F
+
+            y = starty;
+            x = startx;
+            while (y <= endy)
+            {
+                setPixel(pixels, x, y, c1);
+                if (F <= 0)
+                {
+                    F += dx2;
+                }
+                else
+                {
+                    x++;
+                    F -= dy2_minus_dx2;
+                }
+                y++;
+            }
+        }
+    }
+	else    // m < 0
+    {
+        // Case 3: -1 <= m < 0 (Mirror about x-axis, replace all dy by -dy)
+        if (dx >= -dy)
+        {
+            F = -dy2 - dx;    // initial F
+
+            x = startx;
+            y = starty;
+            while (x <= endx)
+            {
+                setPixel(pixels, x, y, c1);
+                if (F <= 0)
+                {
+                    F -= dy2;
+                }
+                else
+                {
+                    y--;
+                    F -= dy2_plus_dx2;
+                }
+                x++;
+            }
+        }
+        // Case 4: -INF < m < -1 (Mirror about x-axis and mirror 
+        // about y=x line, replace all dx by -dy and dy by dx)
+        else    
+        {
+            F = dx2 + dy;    // initial F
+
+            y = starty;
+            x = startx;
+            while (y >= endy)
+            {
+                setPixel(pixels, x, y, c1);
+                if (F <= 0)
+                {
+                    F += dx2;
+                }
+                else
+                {
+                    x++;
+                    F += dy2_plus_dx2;
+                }
+                y--;
+            }
+        }
 	}
+}
+
+void Homework01App::setPixel(uint8_t* pixels, int xCoor, int yCoor, Color8u c1)
+{
+	pixels[3*(xCoor + yCoor*kTextureSize)] = c1.r;
+	pixels[3*(xCoor + yCoor*kTextureSize)+1] = c1.g;
+	pixels[3*(xCoor + yCoor*kTextureSize)+2] = c1.b;
 
 }
 
+
 void Homework01App::basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1)
 {
-
+	basicLine(pixels, x1, y1, x2, y2, c1);
+	basicLine(pixels, x2, y2, x3, y3, c1);
+	basicLine(pixels, x1, y1, x3, y3, c1);
 }
 
 void Homework01App::setup()
@@ -190,6 +305,8 @@ void Homework01App::update()
 
 	Color8u lineColor = Color8u(0,0,0);
 	basicLine(dataArray, 5, 5, 500, 300, lineColor);
+
+	basicTriangle(dataArray, 500, 400, 500, 500, 600, 500, lineColor);
 
 	//Only save the first frame of drawing as output, code snippet via Dr. Brinkman
 	if(frame_number_ == 0){
