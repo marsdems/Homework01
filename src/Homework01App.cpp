@@ -47,6 +47,10 @@ class Homework01App : public AppBasic {
 	void basicRectangle (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1, Color8u c2);
 
 	void redTintImage (uint8_t* pixels);
+
+	void basicLine (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1);
+
+	void basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1);
 };
 
 void Homework01App::prepareSettings(Settings* settings) {
@@ -108,7 +112,18 @@ void Homework01App::redTintImage(uint8_t* pixels)
 	}
 }
 
-//void Homework01App::basicCircle(
+void Homework01App::basicLine(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1)
+{
+
+
+
+}
+
+void Homework01App::basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1)
+{
+
+}
+
 void Homework01App::setup()
 {
 	frame_number_=0;
