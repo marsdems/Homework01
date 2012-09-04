@@ -134,21 +134,20 @@ void Homework01App::basicLine(uint8_t* pixels, int x1, int y1, int x2, int y2, C
 		//Draws the first pixel of the line
 		pixels[3*(startx + starty*kTextureSize)] = c1.r;
 		pixels[3*(startx + starty*kTextureSize)+1] = c1.g;
-		pixels[3*(startx + starty*kTextureSize)+2] = c1.b;
-				
-		while (currentx < endx) {
+		pixels[3*(startx + starty*kTextureSize)+2] = c1.b;			
+			
+		for (int x = currentx; x <= endx; x++)
+		{
 			currenty = ((endy - starty)/(endx - startx)) * (currentx - startx) + starty;
-					
-			for (int y = starty; y < endy; y++) {
-				if (y == currenty)
-				{
+			for (int y = starty; y <= endy; y++) {
+				//if (y == currenty)
+				//{
 					pixels[3*(currentx + currenty*kTextureSize)] = c1.r;
 					pixels[3*(currentx + currenty*kTextureSize)+1] = c1.g;
 					pixels[3*(currentx + currenty*kTextureSize)+2] = c1.b;
-				} 
+				//}				
 			}
-		currentx++;
-		} 
+		}		
 	}
 
 	if ((endy - starty) > (endx - startx))
