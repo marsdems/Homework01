@@ -36,7 +36,9 @@ class Homework01App : public AppBasic {
   private:
 	Surface* mySurface_;
 	int frame_number_;	
-
+	
+	int pixelCount;
+	int pixelCountBackwards;
 	//Width and height of the screen
 	static const int kAppWidth=800;
 	static const int kAppHeight=600;
@@ -70,6 +72,7 @@ void Homework01App::prepareSettings(Settings* settings) {
 }
 
 void Homework01App::makeRectangle(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u fill, Color8u fill2) {
+	
 	//Determines the starting and ending coordinates for the rectangle
 	int startx = (x1 < x2) ? x1 : x2;
 	int endx = (x1 < x2) ? x2 : x1;
@@ -108,14 +111,14 @@ void Homework01App::makeRectangle(uint8_t* pixels, int x1, int y1, int x2, int y
 
 void Homework01App::makeCircle(uint8_t* pixels, int xCenter, int yCenter, int r, Color8u c1)
 {
-	for (int x = xCenter; x <= r; x++)
+	for (int y = yCenter - r; y <= yCenter + r; y++)
 	{
-		for (int y = yCenter; y <= r; y++)
+		for (int x = xCenter - r; x <= xCenter + r; x++)
 		{
-			int distanceFromCenter = (int)sqrt((double)(xCenter * xCenter) + (yCenter * yCenter));
-			while (distanceFromCenter <= r)
+			int distanceFromCenter = (int)sqrt((double)((x-xCenter)*(x-xCenter) + (y-yCenter)*(y-yCenter)));
+			if (distanceFromCenter <= r)
 			{
-
+				setPixel(pixels, x, y, c1);
 			}
 		}
 	}
@@ -125,7 +128,7 @@ void Homework01App::makeLine(uint8_t* pixels, int x1, int y1, int x2, int y2, Co
 {
 	// On this method I used the starting algorithm from this website:
 	// http://www.codekeep.net/snippets/e39b2d9e-0843-4405-8e31-44e212ca1c45.aspx
-	// and then rewrote section of the code to better fit the rest of the program
+	// and then rewrote sections of the code to better fit the rest of the program
 
 	// Determines the starting and ending coordinates for the line.
 	int startx = (x1 < x2) ? x1 : x2;
@@ -264,7 +267,6 @@ void Homework01App::setPixel(uint8_t* pixels, int xCoor, int yCoor, Color8u c1)
 	pixels[3*(xCoor + yCoor*kTextureSize)] = c1.r;
 	pixels[3*(xCoor + yCoor*kTextureSize)+1] = c1.g;
 	pixels[3*(xCoor + yCoor*kTextureSize)+2] = c1.b;
-
 }
 
 
@@ -278,7 +280,8 @@ void Homework01App::makeTriangle (uint8_t* pixels, int x1, int y1, int x2, int y
 void Homework01App::setup()
 {
 	frame_number_=0;
-	
+	pixelCount = 0;
+	pixelCountBackwards = kAppHeight;
 	//This is the setup that everyone needs to do
 	mySurface_ = new Surface(kTextureSize,kTextureSize,false);
 }
@@ -311,25 +314,41 @@ void Homework01App::mouseDown( MouseEvent event )
 
 void Homework01App::update()
 {
+	Color8u RND = Color8u((1+rand() * 255),(1+rand() * 255),(1+rand() * 255));	
 	//Get our array of pixel information
 	uint8_t* dataArray = (*mySurface_).getData();
 
 	//Makes a two-colored rectangle
 	Color8u rectFill = Color8u(255,0,0);
 	Color8u rectFill2 = Color8u(0,100,200);
-	makeRectangle(dataArray, 100, 100, 400, 400, rectFill, rectFill2); 
+	makeRectangle(dataArray, 50, 50, 200, 200, rectFill, rectFill2); 
 
+	//Makes a circle
+	makeCircle(dataArray, 500, 500, 100, Color8u(160,32,240));
 	
 	//Makes a line
-	Color8u lineColor = Color8u(0,255,5);
-	makeLine(dataArray, 600, 200, 700, 610, lineColor);
-	makeLine(dataArray, 600, 200, 700, 620, lineColor);
-	makeLine(dataArray, 600, 200, 700, 630, lineColor);
-
+	Color8u lineColor = Color8u(0,255,5);	
+	makeLine(dataArray, 600, 125, 680, 565, lineColor);
 
 	//Makes a triangle
 	Color8u triangleColor = Color8u(255,255,0);
 	makeTriangle(dataArray, 500, 400, 500, 500, 600, 500, triangleColor);
+
+	if (pixelCount < kAppHeight)
+	{
+		setPixel(dataArray, pixelCount, pixelCount, Color8u(255,0,0));
+		setPixel(dataArray, kAppWidth - pixelCount, pixelCount, Color8u(255,0,0));			
+	}
+	else 
+		pixelCount = 0;
+
+	if (pixelCountBackwards > 0)
+	{
+		setPixel(dataArray, pixelCount, pixelCountBackwards, Color8u(0, 255, 255));
+		setPixel(dataArray, kAppWidth - pixelCount, pixelCountBackwards, Color8u(0, 255, 255));				
+	}
+	else 
+		pixelCountBackwards = kAppHeight;
 
 	//Only save the first frame of drawing as output, code snippet via Dr. Brinkman
 	if(frame_number_ == 0){
@@ -337,11 +356,14 @@ void Homework01App::update()
 	}
 	//keeps track of how many frames we have shown.
 	frame_number_++;
+	pixelCount++;
+	pixelCountBackwards--;
 }
 
 void Homework01App::draw()
 {
-	gl::draw(*mySurface_); 
+	uint8_t* dataArray = (*mySurface_).getData();
+	gl::draw(*mySurface_);	
 }
 
 CINDER_APP_BASIC( Homework01App, RendererGl )
