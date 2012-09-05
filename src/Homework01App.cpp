@@ -11,8 +11,8 @@
  * which means you are free to use, share, and remix it as long as you
  * give attribution. Commercial uses are allowed.
  *
- * @note This project satisfies goals A.1 (rectangle), A.2 (circle), B.1 (blur), E.2 (transparency),
- * E.5 (animation) and E.6 (mouse interaction)
+ * @note This project satisfies goals A.1 (rectangle), A.2 (circle), A.3 (line),
+ * A.7 (triangle), C, D, E.5 (animation), E.6 (mouse interaction)
  */
 #include "cinder/app/AppBasic.h"
 #include "cinder/gl/gl.h"
@@ -53,9 +53,6 @@ class Homework01App : public AppBasic {
 	// Creates a basic circle with center x, y, radius r, satisfies Requirement A.2 (circle)
 	void makeCircle(uint8_t* pixels, int xCenter, int yCenter, int r, Color8u c1);
 
-	// Creates an unappealing seafoamGreen tint on the window, satisfies Requirement A.6 (tint). 
-	void makeDarkSeafoamGreenTint (uint8_t* pixels);
-
 	// Creates a basic line with starting point (x1, y1) and ending point (x2, y2) with color c1.
 	// This satisfies Requirement A.3 (line).
 	void makeLine (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1);
@@ -66,6 +63,9 @@ class Homework01App : public AppBasic {
 	// Creates a basic triangle with three points (x1, y1), (x2, y2), (x3, y3) with color c1.
 	// This satisfies Requirement A.7 (triangle).
 	void makeTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1);
+
+	// Takes in an image and blurs that image, non functioning...
+	void blurImage (uint8_t* image, uint8_t* pattern);
 };
 
 void Homework01App::prepareSettings(Settings* settings) {
@@ -279,6 +279,12 @@ void Homework01App::makeTriangle (uint8_t* pixels, int x1, int y1, int x2, int y
 	makeLine(pixels, x1, y1, x3, y3, c1);
 }
 
+//I wasn't sure where to go about on this method.
+void Homework01App::blurImage (uint8_t* image, uint8_t* pattern)
+{
+
+}
+
 void Homework01App::setup()
 {
 	frame_number_=0;
@@ -290,6 +296,7 @@ void Homework01App::setup()
 	mySurface_ = new Surface(kTextureSize,kTextureSize,false);
 }
 
+// This mouse interaction method satisfies Requirement E.6 (Mouse interaction)
 void Homework01App::mouseDown( MouseEvent event )
 {	
 	uint8_t* dataArray = (*mySurface_).getData();
@@ -303,18 +310,11 @@ void Homework01App::mouseDown( MouseEvent event )
 
 	int rectSize = (rand() % 3 + 1);
 	if (rectSize == 1) 
-	{
 		makeRectangle(dataArray, xLoc - 20, yLoc - 20, xLoc + 20, yLoc + 20, RND, RND);
-	}
 	if (rectSize == 2)
-	{
 	    makeRectangle(dataArray, xLoc - 40, yLoc - 40, xLoc + 40, yLoc + 40, RND, RND);
-	}
-
 	if (rectSize == 3)
-	{
-		makeRectangle(dataArray, xLoc - 60, yLoc - 60, xLoc + 60, yLoc + 60, RND, RND);
-	} 	
+		makeRectangle(dataArray, xLoc - 60, yLoc - 60, xLoc + 60, yLoc + 60, RND, RND);	
 }
 
 void Homework01App::update()
@@ -343,8 +343,7 @@ void Homework01App::update()
 	Color8u triangleColor = Color8u(255,255,0);
 	makeTriangle(dataArray, 500, 400, 500, 500, 600, 500, triangleColor);
 
-	//Makes a moving line
-
+	//Makes a moving line, which satisfies Requirement E.5 (Animation)
 	makeLine(dataArray, 650, 50, 750, 50, Color8u(0,255,0));	
 	
 	if (movingSquareCount < 128) 
@@ -359,7 +358,7 @@ void Homework01App::update()
 	{
 		movingSquareCount = 0;
 	}
-	//Makes intersecting lines from the corners of the window
+	//Makes intersecting lines from the corners of the window, which satisfies Requirement E.5 (Animation)
 	if (pixelCount < kAppHeight)
 	{
 		setPixel(dataArray, pixelCount, pixelCount, Color8u(255,0,0));
@@ -377,11 +376,13 @@ void Homework01App::update()
 		pixelCountBackwards = kAppHeight;
 
 	//Only save the first frame of drawing as output, code snippet via Dr. Brinkman
+	//Satisfies Requirement D.1 (saving image)
 	if(frame_number_ == 0){
 		writeImage("marsdems.png",*mySurface_);
 	}
 	//keeps track of how many frames we have shown.
 	frame_number_++;
+
 	pixelCount++;
 	pixelCountBackwards--;
 	movingSquareCount++;
@@ -389,8 +390,7 @@ void Homework01App::update()
 }
 
 void Homework01App::draw()
-{
-	uint8_t* dataArray = (*mySurface_).getData();
+{	
 	gl::draw(*mySurface_);
 }
 
