@@ -39,6 +39,8 @@ class Homework01App : public AppBasic {
 	
 	int pixelCount;
 	int pixelCountBackwards;
+	int movingSquareCount;
+	int greenShade;
 	//Width and height of the screen
 	static const int kAppWidth=800;
 	static const int kAppHeight=600;
@@ -282,6 +284,8 @@ void Homework01App::setup()
 	frame_number_=0;
 	pixelCount = 0;
 	pixelCountBackwards = kAppHeight;
+	movingSquareCount = 1;
+	greenShade = 1;
 	//This is the setup that everyone needs to do
 	mySurface_ = new Surface(kTextureSize,kTextureSize,false);
 }
@@ -293,8 +297,9 @@ void Homework01App::mouseDown( MouseEvent event )
 	Color8u RND = Color8u((1+rand() * 255),(1+rand() * 255),(1+rand() * 255));	
 	int xLoc = event.getX();
 	int yLoc = event.getY();
+
 	//Sets background color to White
-	makeRectangle(dataArray, 0, 0, kTextureSize, kTextureSize, WHT, WHT);		
+	//makeRectangle(dataArray, 0, 0, kTextureSize, kTextureSize, WHT, WHT);		
 
 	int rectSize = (rand() % 3 + 1);
 	if (rectSize == 1) 
@@ -314,6 +319,10 @@ void Homework01App::mouseDown( MouseEvent event )
 
 void Homework01App::update()
 {
+	if (greenShade > 254)
+	{
+		greenShade = 0;
+	}
 	Color8u RND = Color8u((1+rand() * 255),(1+rand() * 255),(1+rand() * 255));	
 	//Get our array of pixel information
 	uint8_t* dataArray = (*mySurface_).getData();
@@ -334,6 +343,23 @@ void Homework01App::update()
 	Color8u triangleColor = Color8u(255,255,0);
 	makeTriangle(dataArray, 500, 400, 500, 500, 600, 500, triangleColor);
 
+	//Makes a moving line
+
+	makeLine(dataArray, 650, 50, 750, 50, Color8u(0,255,0));	
+	
+	if (movingSquareCount < 128) 
+	{
+		makeLine(dataArray, 650, 50+movingSquareCount, 750, 50+movingSquareCount, Color8u(0,255 - greenShade,0));
+	}
+	else if (movingSquareCount < 255)
+	{
+		makeLine(dataArray, 650, 178 - (movingSquareCount - 128), 750, 178 - (movingSquareCount - 128), Color8u(0,255 - greenShade,0));
+	}
+	else 
+	{
+		movingSquareCount = 0;
+	}
+	//Makes intersecting lines from the corners of the window
 	if (pixelCount < kAppHeight)
 	{
 		setPixel(dataArray, pixelCount, pixelCount, Color8u(255,0,0));
@@ -358,12 +384,14 @@ void Homework01App::update()
 	frame_number_++;
 	pixelCount++;
 	pixelCountBackwards--;
+	movingSquareCount++;
+	greenShade++;
 }
 
 void Homework01App::draw()
 {
 	uint8_t* dataArray = (*mySurface_).getData();
-	gl::draw(*mySurface_);	
+	gl::draw(*mySurface_);
 }
 
 CINDER_APP_BASIC( Homework01App, RendererGl )
