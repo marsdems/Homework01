@@ -11,8 +11,8 @@
  * which means you are free to use, share, and remix it as long as you
  * give attribution. Commercial uses are allowed.
  *
- * @note This project satisfies goals A.1 (rectangle), A.2 (circle), B.1 (blur), E.2 (transparency),
- * E.5 (animation) and E.6 (mouse interaction)
+ * @note This project satisfies goals A.1 (rectangle), A.2 (circle), A.3 (line),
+ * A.7 (triangle), C, D, E.5 (animation), E.6 (mouse interaction)
  */
 #include "cinder/app/AppBasic.h"
 #include "cinder/gl/gl.h"
@@ -35,9 +35,12 @@ class Homework01App : public AppBasic {
 
   private:
 	Surface* mySurface_;
+	int frame_number_;	
 
-	int frame_number_;
-
+	int pixelCount;
+	int pixelCountBackwards;
+	int movingSquareCount;
+	int greenShade;
 	//Width and height of the screen
 	static const int kAppWidth=800;
 	static const int kAppHeight=600;
@@ -45,18 +48,24 @@ class Homework01App : public AppBasic {
 
 	// Creates a basic Rectangle with starting point (x1, y1) and ending point (x2, y2) with color
 	// c1 and c2. This satisfies Requirement A.1 (rectangle).
-	void basicRectangle (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1, Color8u c2);
+	void makeRectangle (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1, Color8u c2);
 
-
-	void redTintImage (uint8_t* pixels);
+	// Creates a basic circle with center x, y, radius r, satisfies Requirement A.2 (circle)
+	void makeCircle(uint8_t* pixels, int xCenter, int yCenter, int r, Color8u c1);
 
 	// Creates a basic line with starting point (x1, y1) and ending point (x2, y2) with color c1.
 	// This satisfies Requirement A.3 (line).
-	void basicLine (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1);
+	void makeLine (uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1);
+
+	// A helper method for setting the pixel color
+	void Homework01App::setPixel(uint8_t* pixels, int xCoor, int yCoor, Color8u c1);
 
 	// Creates a basic triangle with three points (x1, y1), (x2, y2), (x3, y3) with color c1.
 	// This satisfies Requirement A.7 (triangle).
-	void basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1);
+	void makeTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1);
+
+	// Takes in an image and blurs that image, non functioning...
+	void blurImage (uint8_t* image, uint8_t* pattern);
 };
 
 void Homework01App::prepareSettings(Settings* settings) {
@@ -64,14 +73,15 @@ void Homework01App::prepareSettings(Settings* settings) {
 	(*settings).setResizable(false);
 }
 
-void Homework01App::basicRectangle(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u fill, Color8u fill2) {
+void Homework01App::makeRectangle(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u fill, Color8u fill2) {
+
 	//Determines the starting and ending coordinates for the rectangle
 	int startx = (x1 < x2) ? x1 : x2;
 	int endx = (x1 < x2) ? x2 : x1;
 	int starty = (y1 < y2) ? y1 : y2;
 	int endy = (y1 < y2) ? y2 : y1;
-	
-	//Boundary Checking
+
+	//Boundary Checking, credit to Dr. Brinkman
 	if (endx < 0) return;
 	if (endy < 0) return;
 	if (startx >= kAppWidth) return;
@@ -85,88 +95,309 @@ void Homework01App::basicRectangle(uint8_t* pixels, int x1, int y1, int x2, int 
 		for (int x = startx; x <= endx; x++) {			
 			if (currentPixel < (rectSize/2)) 
 			{
-				pixels[3*(x + y*kTextureSize)] = fill.r;
-				pixels[3*(x + y*kTextureSize)+1] = fill.g;
-				pixels[3*(x + y*kTextureSize)+2] = fill.b;				
+				setPixel(pixels, x, y, fill);				
 			}
 			else if (currentPixel > (rectSize/2)) 
 			{
-				pixels[3*(x + y*kTextureSize)] = fill2.r;
-				pixels[3*(x + y*kTextureSize)+1] = fill2.g;
-				pixels[3*(x + y*kTextureSize)+2] = fill2.b;				
+				setPixel(pixels, x, y, fill2);			
 			}
 			//Middle pixel of rectangle will be red
 			else
 			{
-				pixels[3*(x + y*kTextureSize)] = 255;
-				pixels[3*(x + y*kTextureSize)+1] = 0;
-				pixels[3*(x + y*kTextureSize)+2] = 0;
+				setPixel(pixels, x, y, Color8u(255,0,0));
 			}
 			currentPixel++;
 		}
 	}
 }
 
-void Homework01App::redTintImage(uint8_t* pixels) 
+void Homework01App::makeCircle(uint8_t* pixels, int xCenter, int yCenter, int r, Color8u c1)
 {
-	for (int y = 0; y <= kAppHeight; y++) {
-		for (int x = 0; x <= kAppWidth; x++) {	
-			pixels[3*(x + y*kTextureSize)] = 100;
-			//pixels[3*(x + y*kTextureSize)+1] = pixels[3*(x + y*kTextureSize)+1];
-			//pixels[3*(x + y*kTextureSize)+2] = pixels[3*(x + y*kTextureSize)+2];		
+	for (int y = yCenter - r; y <= yCenter + r; y++)
+	{
+		for (int x = xCenter - r; x <= xCenter + r; x++)
+		{
+			int distanceFromCenter = (int)sqrt((double)((x-xCenter)*(x-xCenter) + (y-yCenter)*(y-yCenter)));
+			if (distanceFromCenter <= r)
+			{
+				setPixel(pixels, x, y, c1);
+			}
 		}
 	}
 }
 
-void Homework01App::basicLine(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1)
+void Homework01App::makeLine(uint8_t* pixels, int x1, int y1, int x2, int y2, Color8u c1)
 {
+	// On this method I used the starting algorithm from this website:
+	// http://www.codekeep.net/snippets/e39b2d9e-0843-4405-8e31-44e212ca1c45.aspx
+	// and then rewrote sections of the code to better fit the rest of the program
 
+	// Determines the starting and ending coordinates for the line.
+	int startx = (x1 < x2) ? x1 : x2;
+	int endx = (x1 < x2) ? x2 : x1;
+	int starty = (y1 < y2) ? y1 : y2;
+	int endy = (y1 < y2) ? y2 : y1;		
 
+	int F, x, y;
+    int dy            = endy - starty;  // y-increment from p1 to p2
+    int dx            = endx - endy;  // x-increment from p1 to p2
+    int dy2           = (dy << 1);  // dy << 1 == 2*dy
+    int dx2           = (dx << 1);
+    int dy2_minus_dx2 = dy2 - dx2;  // precompute constant for speed up
+    int dy2_plus_dx2  = dy2 + dx2;
 
+	// Vertical Line
+	if (startx == endx)
+	{
+        x = startx;
+        y = starty;
+        while (y <= endy)
+        {
+           setPixel(pixels, x, y, c1);
+           y++;
+        }
+        return;
+   }
+    // Horizontal line
+    else if (starty == endy)
+    {
+        x = startx;
+        y = starty;
+
+        while (x <= endx)
+        {
+            setPixel(pixels, x, y, c1);
+            x++;
+        }
+        return;
+    }
+
+    if (dy >= 0)    
+    {
+        // 0 <= m <= 1 
+        if (dy <= dx)   
+        {
+            F = dy2 - dx;
+            x = startx;
+            y = starty;
+            while (x <= endx)
+            {
+                setPixel(pixels, x, y, c1);	
+                if (F <= 0)
+                {
+                    F += dy2;
+                }
+                else
+                {
+                    y++;
+                    F += dy2_minus_dx2;
+                }
+                x++;
+            }
+        }
+        // 1 < m < INF 
+        else
+        {
+            F = dx2 - dy;
+            y = starty;
+            x = startx;
+            while (y <= endy)
+            {
+                setPixel(pixels, x, y, c1);
+                if (F <= 0)
+                {
+                    F += dx2;
+                }
+                else
+                {
+                    x++;
+                    F -= dy2_minus_dx2;
+                }
+                y++;
+            }
+        }
+    }
+	else   // m < 0
+    {
+        // -1 <= m < 0 
+        if (dx >= -dy)
+        {
+            F = -dy2 - dx;    
+            x = startx;
+            y = starty;
+            while (x <= endx)
+            {
+                setPixel(pixels, x, y, c1);
+                if (F <= 0)
+                {
+                    F -= dy2;
+                }
+                else
+                {
+                    y--;
+                    F -= dy2_plus_dx2;
+                }
+                x++;
+            }
+        }
+        // -INF < m < -1 
+        else    
+        {
+            F = dx2 + dy;
+            y = starty;
+            x = startx;
+            while (y >= endy)
+            {
+                setPixel(pixels, x, y, c1);
+                if (F <= 0)
+                {
+                    F += dx2;
+                }
+                else
+                {
+                    x++;
+                    F += dy2_plus_dx2;
+                }
+                y--;
+            }
+        }
+	}
 }
 
-void Homework01App::basicTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1)
+void Homework01App::setPixel(uint8_t* pixels, int xCoor, int yCoor, Color8u c1)
 {
+	pixels[3*(xCoor + yCoor*kTextureSize)] = c1.r;
+	pixels[3*(xCoor + yCoor*kTextureSize)+1] = c1.g;
+	pixels[3*(xCoor + yCoor*kTextureSize)+2] = c1.b;
+}
 
+
+void Homework01App::makeTriangle (uint8_t* pixels, int x1, int y1, int x2, int y2, int x3, int y3, Color8u c1)
+{
+	makeLine(pixels, x1, y1, x2, y2, c1);
+	makeLine(pixels, x2, y2, x3, y3, c1);
+	makeLine(pixels, x1, y1, x3, y3, c1);
+}
+
+//I wasn't sure where to go about on this method.
+void Homework01App::blurImage (uint8_t* image, uint8_t* pattern)
+{	
 }
 
 void Homework01App::setup()
 {
 	frame_number_=0;
-	
+	pixelCount = 0;
+	pixelCountBackwards = kAppHeight;
+	movingSquareCount = 1;
+	greenShade = 1;
 	//This is the setup that everyone needs to do
 	mySurface_ = new Surface(kTextureSize,kTextureSize,false);
 }
 
+// This mouse interaction method satisfies Requirement E.6 (Mouse interaction)
 void Homework01App::mouseDown( MouseEvent event )
-{
-	int xCoor = event.getX();
-	int yCoor = event.getY();
-	
+{	
+	uint8_t* dataArray = (*mySurface_).getData();
+	Color8u WHT = Color8u(255,255,255);
+	Color8u RND = Color8u((1+rand() * 255),(1+rand() * 255),(1+rand() * 255));	
+	int xLoc = event.getX();
+	int yLoc = event.getY();
+
+	//Sets background color to White
+	//makeRectangle(dataArray, 0, 0, kTextureSize, kTextureSize, WHT, WHT);		
+	if (yLoc < 60){
+		yLoc = 61;
+	}
+	int rectSize = (rand() % 3 + 1);
+	if (rectSize == 1) 
+		makeRectangle(dataArray, xLoc - 20, yLoc - 20, xLoc + 20, yLoc + 20, RND, RND);
+	if (rectSize == 2)
+	    makeRectangle(dataArray, xLoc - 40, yLoc - 40, xLoc + 40, yLoc + 40, RND, RND);
+	if (rectSize == 3)
+		makeRectangle(dataArray, xLoc - 60, yLoc - 60, xLoc + 60, yLoc + 60, RND, RND);	
 }
 
 void Homework01App::update()
 {
+	if (greenShade > 254)
+	{
+		greenShade = 0;
+	}
+	Color8u RND = Color8u((1+rand() * 255),(1+rand() * 255),(1+rand() * 255));	
 	//Get our array of pixel information
 	uint8_t* dataArray = (*mySurface_).getData();
 
-	Color8u rectFill = Color8u(128,255,128);
-	Color8u rectFill2 = Color8u(255,128,255);
-	basicRectangle(dataArray, 100, 100, 400, 400, rectFill, rectFill2); 
+	//Makes a two-colored rectangle
+	Color8u rectFill = Color8u(255,0,0);
+	Color8u rectFill2 = Color8u(0,100,200);
+	makeRectangle(dataArray, 50, 50, 200, 200, rectFill, rectFill2); 
 
-	redTintImage(dataArray);
+	//Makes a circle
+	makeCircle(dataArray, 500, 500, 100, Color8u(160,32,240));
+
+	//Makes a line
+	Color8u lineColor = Color8u(0,255,5);	
+	makeLine(dataArray, 600, 125, 680, 565, lineColor);
+
+	//Makes a triangle
+	Color8u triangleColor = Color8u(255,255,0);
+	makeTriangle(dataArray, 500, 400, 500, 500, 600, 500, triangleColor);
+
+	//Makes a moving line, which satisfies Requirement E.5 (Animation)
+	makeLine(dataArray, 0, 0, 0, 600, Color8u(0,0,0));
+	if (frame_number_ == 250){
+	for (int i =1; i <kAppWidth-1; i++){
+		makeLine(dataArray,i,0,i,600,Color8u(0,i/3.137,0));
+	}
+	}
+	if (frame_number_ == 500){
+	for (int i =1; i <kAppWidth-1; i++){
+		makeLine(dataArray,i,0,i,600,Color8u(0,0,i/3.137));
+	}
+	}
+	if (frame_number_ == 750){
+	for (int i =1; i <kAppWidth-1; i++){
+		makeLine(dataArray,i,0,i,600,Color8u(i/3.137,0,0));
+	}
+	}
+	if (frame_number_ == 751){
+		frame_number_ = 0;
+	}
+	//Makes intersecting lines from the corners of the window, which satisfies Requirement E.5 (Animation)
+	if (pixelCount < kAppHeight)
+	{
+		setPixel(dataArray, pixelCount, pixelCount, Color8u(255,0,0));
+		setPixel(dataArray, kAppWidth - pixelCount, pixelCount, Color8u(255,0,0));			
+	}
+	else 
+		pixelCount = 0;
+
+	if (pixelCountBackwards > 0)
+	{
+		setPixel(dataArray, pixelCount, pixelCountBackwards, Color8u(0, 255, 255));
+		setPixel(dataArray, kAppWidth - pixelCount, pixelCountBackwards, Color8u(0, 255, 255));				
+	}
+	else 
+		pixelCountBackwards = kAppHeight;
 
 	//Only save the first frame of drawing as output, code snippet via Dr. Brinkman
+	//Satisfies Requirement D.1 (saving image)
 	if(frame_number_ == 0){
 		writeImage("marsdems.png",*mySurface_);
 	}
 	//keeps track of how many frames we have shown.
 	frame_number_++;
+
+	pixelCount++;
+	pixelCountBackwards--;
+	movingSquareCount++;
+	greenShade++;
 }
 
 void Homework01App::draw()
-{
-	gl::draw(*mySurface_); 
+{	
+	gl::draw(*mySurface_);
 }
 
 CINDER_APP_BASIC( Homework01App, RendererGl )
